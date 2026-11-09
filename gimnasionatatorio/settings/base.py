@@ -10,6 +10,7 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,testserver', cast=Csv())
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -105,3 +106,24 @@ MESSAGE_TAGS = {mensajes.ERROR: 'danger'}
 # Email: por consola en desarrollo (los mails de recuperación aparecen en la terminal).
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='webmaster@localhost')
+
+
+# --- Jazzmin: skin del panel /admin/ ---
+JAZZMIN_SETTINGS = {
+    "site_title": "Corpo – Administración",
+    "site_header": "Corpo Natatorio y Gimnasio",
+    "site_brand": "Corpo Admin",
+    "site_logo": "assets/img/logo/icono.png",   # tu logo, relativo a static
+    "site_logo_classes": "img-circle",
+    "welcome_sign": "Gestión del gimnasio natatorio",
+    "changeform_format": "horizontal_tabs",
+    "user_avatar": None,
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "brand_small_text": False,
+    "accent": "accent-primary",   # probá accent-success / accent-danger
+    "navbar": "navbar-dark",
+    "no_navbar_border": True,
+}
