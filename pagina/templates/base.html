@@ -1,0 +1,269 @@
+{% load static %}
+<!doctype html>
+<html class="no-js" lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>{% block title %}Corpo Natatorio y Gimnasio{% endblock %}</title>
+    <meta name="description" content="Corpo Natatorio y Gimnasio">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="{% static 'assets/img/logo/icono.png' %}" rel="icon">
+
+    <!-- ========================= CSS here ========================= -->
+    <link rel="stylesheet" href="{% static 'assets/css/bootstrap-5.0.0-alpha.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/LineIcons.2.0.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/animate.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/tiny-slider.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/glightbox.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/calendar.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- ========================= preloader start ========================= -->
+    <div class="preloader">
+        <div class="loader">
+            <div class="ytp-spinner">
+                <div class="ytp-spinner-container">
+                    <div class="ytp-spinner-rotator">
+                        <div class="ytp-spinner-left">
+                            <div class="ytp-spinner-circle"></div>
+                        </div>
+                        <div class="ytp-spinner-right">
+                            <div class="ytp-spinner-circle"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>f
+    </div>
+    <!-- preloader end -->
+
+    <!-- ========================= header start ========================= -->
+    <header class="header navbar-area">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-lg-12">
+                <nav class="navbar navbar-expand-lg">
+                    <!-- Contenedor para el logo y el botón de collapse -->
+                    <div class="d-flex w-100 align-items-center justify-content-between">
+                        <!-- Logo centrado -->
+                        <a href="{% url 'pagina:inicio' %}" class="navbar-brand mx-auto mx-lg-0">
+                            <img src="{% static 'assets/img/logo/icono.png' %}" alt="Logo">
+                        </a>
+                        <!-- Botón de collapse a la derecha -->
+                        <button class="navbar-toggler" type="button" data-toggle="collapse"
+                            data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="toggler-icon"></span>
+                            <span class="toggler-icon"></span>
+                            <span class="toggler-icon"></span>
+                        </button>
+                    </div>
+
+                    <!-- Menú collapse -->
+                    <div class="collapse navbar-collapse sub-menu-bar" id="navbarSupportedContent">
+                        <ul id="nav" class="navbar-nav ml-auto">
+                            <li class="nav-item">
+                                <a class="page-scroll" href="#">Inicio</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="page-scroll" href="#about">Nosotros</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="page-scroll" href="#service">Actividades</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="page-scroll" href="#team">Horarios</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="page-scroll" href="#blog">Preguntas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="page-scroll" href="#contact">Contacto</a>
+                            </li>
+
+                            {# ==== Enlaces según sesión ==== #}
+                            {% if user.is_authenticated %}
+                            <li class="nav-item">
+                                <a class="page-scroll" href="{% url 'socios:panel' %}">Mi Panel</a>
+                            </li>
+                            {% if user.is_staff %}
+                            <li class="nav-item">
+                                <a class="page-scroll" href="{% url 'socios:dashboard' %}">Admin</a>
+                            </li>
+                            {% endif %}
+                            <li class="nav-item">
+                                <a class="page-scroll" href="{% url 'accounts:logout' %}">Salir</a>
+                            </li>
+                            {% else %}
+                            <li class="nav-item">
+                                <a class="page-scroll" href="{% url 'accounts:login' %}">Ingresar</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="page-scroll" href="{% url 'accounts:registro' %}">Asociate</a>
+                            </li>
+                            {% endif %}
+
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+    <!-- ========================= header end ========================= -->
+    {# ==== Mensajes (django.contrib.messages) ==== #}
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} mb-2" role="alert">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block content %}{% endblock content %}
+
+    <!-- ========================= footer start ========================= -->
+
+    <footer class="footer pt-20">
+        <div class="container">
+            <div class="copyright-area">
+                <div class="row">
+                    <div class="col-md-12">
+
+                        <div class="footer-social-links">
+                            <ul class="d-flex">
+                                <!-- <li><a href="https://api.whatsapp.com/send?phone=5492216049190"><i class="lni lni-whatsapp"></i></a></li> -->
+                                <li><a href="https://www.facebook.com/CORPO77374/?locale=es_LA"><i
+                                            class="lni lni-facebook-filled"></i></a></li>
+                                <li><a href="https://www.instagram.com/corpogimnasionatatorio/"><i
+                                            class="lni lni-instagram-filled"></i></a></li>
+                                <!-- <li><a href="https://api.whatsapp.com/send?phone=5492215410502"><i class="lni lni-whatsapp" ></i></a></li> -->
+                            </ul>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 mb-30">
+                <p class="text-body-secondary text-center">&copy; 2025 Diseño y Desarrollo, MP</p>
+            </div>
+        </div>
+    </footer>
+    <!-- ========================= footer end ========================= -->
+
+    <!-- ========================= scroll-top ========================= -->
+    <a href="https://api.whatsapp.com/send?phone=5492216049190" class="scroll-top">
+        <i class="lni lni-whatsapp"></i>
+    </a>
+
+    <!-- ========================= JS here ========================= -->
+
+    <script src="{% static 'assets/js/bootstrap.bundle-5.0.0.alpha-min.js' %}"></script>
+    <script src="{% static 'assets/js/contact-form.js' %}"></script>
+    <script src="{% static 'assets/js/glightbox.min.js' %}"></script>
+    <script src="{% static 'assets/js/tiny-slider.js' %}"></script>
+    <script src="{% static 'assets/js/isotope.min.js' %}"></script>
+    <script src="{% static 'assets/js/wow.min.js' %}"></script>
+    <script src="{% static 'assets/js/imagesloaded.min.js' %}"></script>
+    <script src="{% static 'assets/js/main.js' %}"></script>
+
+    <script src="{% static 'assets/js/wow.min.js' %}"></script>
+    <script>
+        new WOW().init();
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            imagesLoaded('#container', function () {
+                var elem = document.querySelector('.grid');
+                var iso = new Isotope(elem, {
+                    // options
+                    itemSelector: '.grid-item',
+                    masonry: {
+                        // use outer width of grid-sizer for columnWidth
+                        columnWidth: '.grid-item'
+                    }
+                });
+
+                let filterButtons = document.querySelectorAll('.portfolio-btn-wrapper button');
+                filterButtons.forEach(e => {
+                    e.addEventListener('click', () => {
+                        let filterValue = e.getAttribute('data-filter');
+                        iso.arrange({
+                            filter: filterValue
+                        });
+
+                        // Remove active class from all buttons
+                        filterButtons.forEach(button => {
+                            button.classList.remove('active');
+                        });
+
+                        // Add active class to the clicked button
+                        e.classList.add('active');
+                    });
+                });
+
+                // Set default filter to "Actividades"
+                let defaultFilterValue = '.marketing';
+                iso.arrange({
+                    filter: defaultFilterValue
+                });
+
+                // Add active class to the "Actividades" button
+                filterButtons.forEach(button => {
+                    button.classList.remove('active');
+                    if (button.getAttribute('data-filter') === defaultFilterValue) {
+                        button.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+
+    <script>
+        // Función para manejar la apertura y cierre de los modales
+        function setupModal(modalId, buttonId) {
+            var modal = document.getElementById(modalId);
+            var btn = document.getElementById(buttonId);
+            var span = modal.getElementsByClassName("close")[0];
+
+            btn.onclick = function () {
+                modal.style.display = "flex";
+            }
+
+            span.onclick = function () {
+                modal.style.display = "none";
+            }
+
+            modal.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        }
+
+        // Configurar los modales
+        setupModal("myModal1", "openModal1");
+        setupModal("myModal2", "openModal2");
+        setupModal("myModal3", "openModal3");
+        setupModal("myModal4", "openModal4");
+        setupModal("myModal5", "openModal5");
+        setupModal("myModal6", "openModal6");
+        setupModal("myModal7", "openModal7");
+        setupModal("myModal8", "openModal8");
+        setupModal("myModal9", "openModal9");
+        setupModal("myModal10", "openModal10");
+        setupModal("myModal11", "openModal11");
+        setupModal("myModal12", "openModal12");
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

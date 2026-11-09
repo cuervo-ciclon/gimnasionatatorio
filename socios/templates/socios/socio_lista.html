@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Socios{% endblock %}
+{% block content %}
+<section class="pt-60 pb-60">
+    <div class="container">
+        <div class="section-title text-center mb-40">
+            <span>Socios</span>
+            <h2>Alta y baja</h2>
+        </div>
+
+        <div class="row justify-content-center mb-40">
+            <div class="col-lg-6">
+                <form method="get" class="bg-white p-4 rounded shadow-sm">
+                    <label class="form-label" for="id_q">Buscar</label>
+                    <input type="text" class="form-control" id="id_q" name="q" value="{{ consulta }}" placeholder="DNI, nombre o apellido...">
+                    <button type="submit" class="theme-btn border-btn mt-3">Buscar</button>
+                    <a class="theme-btn border-btn mt-3" href="{% url 'socios:socio_alta' %}">Nuevo socio</a>
+                </form>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="bg-white p-4 rounded shadow-sm">
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead><tr><th>Socio</th><th>DNI</th><th>Plan</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <tbody>
+                                {% for socio in pagina.object_list %}
+                                <tr>
+                                    <td>{{ socio }}</td>
+                                    <td>{{ socio.dni }}</td>
+                                    <td>{{ socio.plan_texto }}</td>
+                                    <td>
+                                        {% if socio.activo %}<span class="badge bg-success">Activo</span>
+                                        {% else %}<span class="badge bg-secondary">Baja</span>{% endif %}
+                                    </td>
+                                    <td>
+                                        <form method="post" action="{% url 'socios:toggle_activo' socio.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                            {% if socio.activo %}
+                                            <button type="submit" class="theme-btn border-btn">Dar de baja</button>
+                                            {% else %}
+                                            <button type="submit" class="theme-btn border-btn">Dar de alta</button>
+                                            {% endif %}
+                                        </form>
+                                        <a class="theme-btn border-btn" href="{% url 'socios:socio_detalle' socio.pk %}">Detalle</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="5">Sin resultados.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3">
+                        {% if pagina.has_previous %}<a href="?q={{ consulta }}&page={{ pagina.previous_page_number }}">Anterior</a>{% endif %}
+                        Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}
+                        {% if pagina.has_next %}<a href="?q={{ consulta }}&page={{ pagina.next_page_number }}">Siguiente</a>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

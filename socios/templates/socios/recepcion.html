@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Recepción{% endblock %}
+{% block content %}
+<section class="pt-60 pb-60">
+    <div class="container">
+        <div class="section-title text-center mb-40">
+            <span>Recepción</span>
+            <h2>Check-in de socios</h2>
+        </div>
+
+        <div class="row justify-content-center mb-40">
+            <div class="col-lg-6">
+                <form method="get" class="bg-white p-4 rounded shadow-sm">
+                    <label class="form-label" for="id_q">Buscar socio</label>
+                    {{ form.q }}
+                    <button type="submit" class="theme-btn border-btn mt-3">Buscar</button>
+                    <p class="small text-muted mt-2 mb-0">Período vigente: {{ periodo }}.</p>
+                </form>
+            </div>
+        </div>
+
+        {% if consulta %}
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="bg-white p-4 rounded shadow-sm">
+                    {% if resultados %}
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr><th>Socio</th><th>DNI</th><th>Plan</th><th>Cuota</th><th>Revisión</th><th>Acciones</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for r in resultados %}
+                                <tr>
+                                    <td>{{ r.socio }}</td>
+                                    <td>{{ r.socio.dni }}</td>
+                                    <td>{{ r.socio.plan_texto }}</td>
+                                    <td>
+                                        {% if r.cuota %}
+                                            {% if r.cuota.pagada %}<span class="badge bg-success">Pagada</span>
+                                            {% else %}<span class="badge bg-warning text-dark">Impaga</span>{% endif %}
+                                        {% else %}<span class="badge bg-secondary">Sin generar</span>{% endif %}
+                                    </td>
+                                    <td>
+                                        {% if r.revision %}
+                                            {% if r.revision.apto %}<span class="badge bg-success">Apto</span>
+                                            {% else %}<span class="badge bg-warning text-dark">Pendiente</span>{% endif %}
+                                        {% else %}<span class="badge bg-secondary">Sin generar</span>{% endif %}
+                                    </td>
+                                    <td>
+                                        <form method="post" action="{% url 'socios:checkin_socio' r.socio.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                            <button type="submit" class="theme-btn border-btn">Check-in</button>
+                                        </form>
+                                        {% if r.cuota and not r.cuota.pagada %}
+                                        <form method="post" action="{% url 'socios:marcar_cuota_pagada' r.cuota.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                            <button type="submit" class="theme-btn border-btn">Pagada</button>
+                                        </form>
+                                        {% endif %}
+                                        {% if r.revision and not r.revision.apto %}
+                                        <form method="post" action="{% url 'socios:marcar_revision_apta' r.revision.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                            <button type="submit" class="theme-btn border-btn">Apto</button>
+                                        </form>
+                                        {% endif %}
+                                        <a class="theme-btn border-btn" href="{% url 'socios:socio_detalle' r.socio.pk %}">Detalle</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="small text-muted mt-2 mb-0">
+                        "Sin generar" = todavía no hay registro del mes; se crea automáticamente al hacer el check-in.
+                        Los avisos de cuota impaga / revisión pendiente / exceso de plan aparecen al registrar el ingreso (no lo bloquean).
+                    </p>
+                    {% else %}
+                    <p class="mb-0">No se encontraron socios activos con "{{ consulta }}".</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

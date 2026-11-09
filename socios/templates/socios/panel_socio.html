@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Mi Panel{% endblock %}
+{% block content %}
+<section class="pt-60 pb-60">
+    <div class="container">
+        <div class="section-title text-center mb-40">
+            <span>Mi Panel</span>
+            <h2>Hola, {{ socio.nombre_completo }}</h2>
+        </div>
+
+        {% if not socio.activo %}
+        <div class="alert alert-warning">Tu cuenta está inactiva. Escribinos para reactivarla.</div>
+        {% endif %}
+
+        <div class="row justify-content-center mb-40">
+            <div class="col-md-5">
+                <div class="bg-white p-4 rounded shadow-sm text-center mb-20">
+                    <h4>Cuota {{ periodo }}</h4>
+                    {% if cuota and cuota.pagada %}
+                        <span class="badge bg-success">PAGADA</span>
+                        <p class="mt-2 mb-0 small">Pagada el {{ cuota.fecha_pago|date:"d/m/Y H:i" }}</p>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">PENDIENTE</span>
+                        <p class="mt-2 mb-0 small">Pasá por recepción para abonar en efectivo o transferencia.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="bg-white p-4 rounded shadow-sm text-center mb-20">
+                    <h4>Revisión médica {{ periodo }}</h4>
+                    {% if revision and revision.apto %}
+                        <span class="badge bg-success">APTO</span>
+                        <p class="mt-2 mb-0 small">Registrada el {{ revision.fecha_revision|date:"d/m/Y H:i" }}</p>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">PENDIENTE</span>
+                        <p class="mt-2 mb-0 small">Presentá tu apto médico en recepción para entrenar este mes.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center mb-40">
+            <div class="col-md-10">
+                <div class="bg-white p-4 rounded shadow-sm">
+                    <h4 class="mb-3">Mis datos</h4>
+                    <p class="mb-1"><strong>Plan:</strong> {{ socio.plan_texto }}</p>
+                    <p class="mb-1"><strong>DNI:</strong> {{ socio.dni|default:"—" }}</p>
+                    <p class="mb-1"><strong>Teléfono:</strong> {{ socio.telefono|default:"—" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="bg-white p-4 rounded shadow-sm">
+                    <h4 class="mb-3">Mis últimas asistencias</h4>
+                    {% if asistencias %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead><tr><th>Fecha</th><th>Hora</th></tr></thead>
+                            <tbody>
+                                {% for asistencia in asistencias %}
+                                <tr>
+                                    <td>{{ asistencia.fecha_hora|date:"d/m/Y" }}</td>
+                                    <td>{{ asistencia.fecha_hora|time:"H:i" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="mb-0">Todavía no registrás asistencias.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

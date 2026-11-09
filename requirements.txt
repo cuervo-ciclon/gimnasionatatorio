@@ -1,0 +1,11 @@
+# --- Core ---
+Django>=6.0,<6.2
+python-decouple>=3.8
+whitenoise>=6.7
+
+# --- Producción con MySQL (descomentar cuando migres) ---
+# mysqlclient>=2.2
+
+# --- Futura API REST para app móvil (descomentar cuando la necesites) ---
+# djangorestframework>=3.15
+# djangorestframework-simplejwt>=5.3

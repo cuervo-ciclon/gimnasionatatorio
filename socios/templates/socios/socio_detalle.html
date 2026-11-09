@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}{{ socio }}{% endblock %}
+{% block content %}
+<section class="pt-60 pb-60">
+    <div class="container">
+        <div class="section-title text-center mb-40">
+            <span>Ficha de socio</span>
+            <h2>{{ socio }}</h2>
+        </div>
+
+        <div class="row justify-content-center mb-40">
+            <div class="col-lg-8">
+                <div class="bg-white p-4 rounded shadow-sm">
+                    <p class="mb-1"><strong>DNI:</strong> {{ socio.dni|default:"—" }}</p>
+                    <p class="mb-1"><strong>Teléfono:</strong> {{ socio.telefono|default:"—" }}</p>
+                    <p class="mb-1"><strong>Plan:</strong> {{ socio.plan_texto }}</p>
+                    <p class="mb-1"><strong>Usuario:</strong> {{ socio.user.username }}</p>
+                    <p class="mb-3"><strong>Estado:</strong>
+                        {% if socio.activo %}<span class="badge bg-success">Activo</span>
+                        {% else %}<span class="badge bg-secondary">Baja</span>{% endif %}
+                    </p>
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <form method="post" action="{% url 'socios:toggle_activo' socio.pk %}">
+                                {% csrf_token %}
+                                {% if socio.activo %}<button type="submit" class="theme-btn border-btn w-100">Dar de baja</button>
+                                {% else %}<button type="submit" class="theme-btn border-btn w-100">Dar de alta</button>{% endif %}
+                            </form>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            {% if cuota and not cuota.pagada %}
+                            <form method="post" action="{% url 'socios:marcar_cuota_pagada' cuota.pk %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                <button type="submit" class="theme-btn border-btn w-100">Cuota {{ periodo }}: pagada</button>
+                            </form>
+                            {% else %}<p class="mb-0">Cuota {{ periodo }}: {{ cuota.pagada|yesno:"Pagada,Pagada,Pendiente" }}</p>{% endif %}
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            {% if revision and not revision.apto %}
+                            <form method="post" action="{% url 'socios:marcar_revision_apta' revision.pk %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                <button type="submit" class="theme-btn border-btn w-100">Revisión {{ periodo }}: apto</button>
+                            </form>
+                            {% else %}<p class="mb-0">Revisión {{ periodo }}: {{ revision.apto|yesno:"Apto,Apto,Pendiente" }}</p>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center mb-40">
+            <div class="col-lg-5">
+                <div class="bg-white p-4 rounded shadow-sm">
+                    <h4 class="mb-3">Cuotas</h4>
+                    <table class="table table-sm">
+                        <thead><tr><th>Período</th><th>Estado</th></tr></thead>
+                        <tbody>
+                            {% for c in cuotas %}
+                            <tr><td>{{ c.periodo }}</td><td>{{ c.pagada|yesno:"Pagada,Pendiente" }}</td></tr>
+                            {% empty %}<tr><td colspan="2">Sin cuotas.</td></tr>{% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="bg-white p-4 rounded shadow-sm">
+                    <h4 class="mb-3">Revisiones médicas</h4>
+                    <table class="table table-sm">
+                        <thead><tr><th>Período</th><th>Estado</th></tr></thead>
+                        <tbody>
+                            {% for r in revisiones %}
+                            <tr><td>{{ r.periodo }}</td><td>{{ r.apto|yesno:"Apto,Pendiente" }}</td></tr>
+                            {% empty %}<tr><td colspan="2">Sin revisiones.</td></tr>{% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="bg-white p-4 rounded shadow-sm">
+                    <h4 class="mb-3">Historial de asistencias</h4>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead><tr><th>Fecha</th><th>Hora</th></tr></thead>
+                            <tbody>
+                                {% for a in asistencias %}
+                                <tr><td>{{ a.fecha_hora|date:"d/m/Y" }}</td><td>{{ a.fecha_hora|time:"H:i" }}</td></tr>
+                                {% empty %}<tr><td colspan="2">Sin asistencias.</td></tr>{% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

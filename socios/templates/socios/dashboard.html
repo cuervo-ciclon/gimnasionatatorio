@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}Panel Admin{% endblock %}
+{% block content %}
+<section class="pt-60 pb-60">
+    <div class="container">
+        <div class="section-title text-center mb-40">
+            <span>Panel de Administración</span>
+            <h2>{{ periodo }}</h2>
+        </div>
+
+        <div class="row mb-40">
+            <div class="col-6 col-md-4 col-lg mb-3">
+                <div class="bg-white p-3 rounded shadow-sm text-center">
+                    <h6 class="text-muted mb-1">Socios activos</h6><h3 class="mb-0">{{ stats.socios_activos }}</h3>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg mb-3">
+                <div class="bg-white p-3 rounded shadow-sm text-center">
+                    <h6 class="text-muted mb-1">Cuotas impagas</h6><h3 class="mb-0">{{ stats.cuotas_impagas }}</h3>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg mb-3">
+                <div class="bg-white p-3 rounded shadow-sm text-center">
+                    <h6 class="text-muted mb-1">Cuotas cobradas</h6><h3 class="mb-0">{{ stats.cuotas_cobradas }}</h3>
+                </div>
+            </div>
+            <div class="col-6 col-md-6 col-lg mb-3">
+                <div class="bg-white p-3 rounded shadow-sm text-center">
+                    <h6 class="text-muted mb-1">Revisiones pendientes</h6><h3 class="mb-0">{{ stats.revisiones_pendientes }}</h3>
+                </div>
+            </div>
+            <div class="col-6 col-md-6 col-lg mb-3">
+                <div class="bg-white p-3 rounded shadow-sm text-center">
+                    <h6 class="text-muted mb-1">Asistencias hoy</h6><h3 class="mb-0">{{ stats.asistencias_hoy }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-4 mb-40">
+                <div class="bg-white p-4 rounded shadow-sm">
+                    <h4 class="mb-3">Check-in rápido</h4>
+                    <form method="post" action="{% url 'socios:checkin_rapido' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        {{ form_checkin.dni }}
+                        <button type="submit" class="theme-btn border-btn mt-3 w-100">Registrar ingreso</button>
+                    </form>
+                    <hr>
+                    <a class="d-block mb-1" href="{% url 'socios:recepcion' %}">Recepción (buscar por nombre/DNI)</a>
+                    <a class="d-block mb-1" href="{% url 'socios:socio_lista' %}">Socios (alta / baja)</a>
+                    <a class="d-block mb-1" href="{% url 'socios:socio_alta' %}">Nuevo socio</a>
+                    <a class="d-block" href="/admin/">Admin de Django</a>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="bg-white p-4 rounded shadow-sm mb-40">
+                    <h4 class="mb-3">Cuotas impagas del mes ({{ impagas|length }})</h4>
+                    {% if impagas %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead><tr><th>Socio</th><th>DNI</th><th></th></tr></thead>
+                            <tbody>
+                                {% for cuota in impagas %}
+                                <tr>
+                                    <td>{{ cuota.socio }}</td>
+                                    <td>{{ cuota.socio.dni }}</td>
+                                    <td class="text-end">
+                                        <form method="post" action="{% url 'socios:marcar_cuota_pagada' cuota.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                            <button type="submit" class="theme-btn border-btn">Marcar pagada</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}<p class="mb-0">Sin cuotas impagas este mes.</p>{% endif %}
+                </div>
+
+                <div class="bg-white p-4 rounded shadow-sm mb-40">
+                    <h4 class="mb-3">Revisiones médicas pendientes ({{ revisiones_pendientes|length }})</h4>
+                    {% if revisiones_pendientes %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead><tr><th>Socio</th><th>DNI</th><th></th></tr></thead>
+                            <tbody>
+                                {% for revision in revisiones_pendientes %}
+                                <tr>
+                                    <td>{{ revision.socio }}</td>
+                                    <td>{{ revision.socio.dni }}</td>
+                                    <td class="text-end">
+                                        <form method="post" action="{% url 'socios:marcar_revision_apta' revision.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                            <button type="submit" class="theme-btn border-btn">Marcar apto</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}<p class="mb-0">Sin revisiones pendientes este mes.</p>{% endif %}
+                </div>
+
+                <div class="bg-white p-4 rounded shadow-sm">
+                    <h4 class="mb-3">Asistencias de hoy ({{ asistencias_hoy|length }})</h4>
+                    {% if asistencias_hoy %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead><tr><th>Socio</th><th>Hora</th></tr></thead>
+                            <tbody>
+                                {% for asistencia in asistencias_hoy %}
+                                <tr><td>{{ asistencia.socio }}</td><td>{{ asistencia.fecha_hora|time:"H:i" }}</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}<p class="mb-0">Todavía no hubo ingresos hoy.</p>{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
