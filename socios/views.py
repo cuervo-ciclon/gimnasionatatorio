@@ -2,7 +2,7 @@
 from functools import wraps
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.views import redirect_to_login
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -16,20 +16,16 @@ from .forms import BuscarSocioForm, CheckinRapidoForm
 from .models import Asistencia, Cuota, RevisionMedica, Socio
 from .services import hacer_checkin, mes_actual, nombre_mes
 
-
-def staff_required(view_func):
-    """Vista solo para staff. Los socios comunes vuelven a su panel con un aviso."""
-
-    @wraps(view_func)
-    def _wrapped(request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return redirect_to_login(request.get_full_path())
+def staff_required(view):
+    """Solo personal (is_staff). Un socio logueado va a SU panel, no al login."""
+    @login_required(login_url='accounts:login')
+    @wraps(view)
+    def wrapper(request, *args, **kwargs):
         if not request.user.is_staff:
-            messages.warning(request, 'No tenés permisos para acceder a esa sección.')
+            messages.warning(request, 'Esa sección es solo para el personal.')
             return redirect('socios:panel')
-        return view_func(request, *args, **kwargs)
-
-    return _wrapped
+        return view(request, *args, **kwargs)
+    return wrapper
 
 
 def _next_seguro(request, fallback):

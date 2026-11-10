@@ -91,7 +91,7 @@
                             {# ==== Enlaces según sesión ==== #}
                             {% if user.is_authenticated %}
                             <li class="nav-item">
-                                <a class="page-scroll" href="{% url 'socios:panel' %}">Mi Panel</a>
+                                <a class="page-scroll" href="{% url 'socios:panel' %}">Panel</a>
                             </li>
                             {% if user.is_staff %}
                             <li class="nav-item">
@@ -99,16 +99,19 @@
                             </li>
                             {% endif %}
                             <li class="nav-item">
-                                <a class="page-scroll" href="{% url 'accounts:logout' %}">Salir</a>
+                                <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger">Salir</button>
+                            </form>
                             </li>
-                            {% else %}
+                        {% else %}
                             <li class="nav-item">
                                 <a class="page-scroll" href="{% url 'accounts:login' %}">Ingresar</a>
                             </li>
                             <li class="nav-item">
                                 <a class="page-scroll" href="{% url 'accounts:registro' %}">Asociate</a>
                             </li>
-                            {% endif %}
+                        {% endif %}
 
                         </ul>
                     </div>

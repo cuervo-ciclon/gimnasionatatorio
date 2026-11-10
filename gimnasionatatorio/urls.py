@@ -9,6 +9,6 @@ admin.site.index_title = 'Gestión del gimnasio natatorio'
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('pagina.urls')),
-    path('cuentas/', include('accounts.urls')),
     path('socios/', include('socios.urls')),
+    path('accounts/', include('accounts.urls')), 
 ]

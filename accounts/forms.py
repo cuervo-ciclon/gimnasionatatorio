@@ -3,8 +3,6 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 
-from socios.models import Socio
-
 
 class LoginForm(AuthenticationForm):
     """Login con estilo Bootstrap (la landing usa Bootstrap 5 alpha)."""
@@ -16,45 +14,39 @@ class LoginForm(AuthenticationForm):
 
 
 class RegistroForm(UserCreationForm):
-    """Registro público: crea el User; la señal crea el Socio y acá se completan sus datos.
+    """Registro público: SOLO email + contraseña + confirmación.
 
-    El socio queda activo y con la cuota y revisión médica del mes vigente
-    generadas automáticamente (señal post_save de Socio).
+    Crea el User con username = email; la señal post_save crea el Socio.
+    DNI, teléfono y plan quedan pendientes: se completan en recepción
+    cuando el socio se presenta por primera vez.
     """
 
-    first_name = forms.CharField(label='Nombre', max_length=150)
-    last_name = forms.CharField(label='Apellido', max_length=150)
-    email = forms.EmailField(label='Email')
-    dni = forms.CharField(label='DNI', max_length=20)
-    telefono = forms.CharField(label='Teléfono', max_length=30, required=False)
-    plan = forms.ChoiceField(label='Plan', choices=Socio.Plan.choices)
-    dias_por_semana = forms.IntegerField(label='Días por semana', min_value=1, max_value=7, initial=3)
+    email = forms.EmailField(label='Email', max_length=254)
 
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ('username', 'first_name', 'last_name', 'email')
+        fields = ('email',)          # password1 y password2 vienen de UserCreationForm
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Orden final: email, contraseña, repetir contraseña
+        self.order_fields(['email', 'password1', 'password2'])
         for campo in self.fields.values():
-            css = 'form-control'
-            if isinstance(campo.widget, forms.Select):
-                css = 'form-select'
-            campo.widget.attrs.setdefault('class', css)
+            campo.widget.attrs.setdefault('class', 'form-control')
 
-    def clean_dni(self):
-        dni = self.cleaned_data['dni'].strip()
-        if Socio.objects.filter(dni=dni).exists():
-            raise forms.ValidationError('Ya existe un socio registrado con ese DNI.')
-        return dni
+    def clean_email(self):
+        email = self.cleaned_data['email'].strip().lower()
+        if User.objects.filter(username=email).exists() or \
+           User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError('Ya existe una cuenta con ese email.')
+        return email
 
     def save(self, commit=True):
-        user = super().save(commit=commit)
+        user = super().save(commit=False)
+        user.username = self.cleaned_data['email'].strip().lower()  # username = email
+        user.email = user.username
+        user.is_staff = False       # nunca staff por registro
+        user.is_superuser = False   # nunca superusuario por registro
         if commit:
-            socio = user.socio  # creado por la señal post_save del usuario
-            socio.dni = self.cleaned_data['dni'].strip()
-            socio.telefono = self.cleaned_data.get('telefono', '')
-            socio.plan = self.cleaned_data['plan']
-            socio.dias_por_semana = self.cleaned_data['dias_por_semana']
-            socio.save()  # dispara la generación de cuota/revisión del mes vigente
+            user.save()             # la señal post_save crea el Socio vacío
         return user

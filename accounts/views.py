@@ -3,8 +3,17 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth import views as auth_views
 from django.shortcuts import redirect, render
+from django.contrib.auth.decorators import login_required
 
 from .forms import RegistroForm
+
+
+@login_required
+def post_login(request):
+    """Luego del login: staff → panel de administración, socio → su panel."""
+    if request.user.is_staff:
+        return redirect('/admin/')  
+    return redirect('socios:panel')
 
 
 class Salir(auth_views.LogoutView):

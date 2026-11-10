@@ -3,11 +3,12 @@ from pathlib import Path
 
 from decouple import Csv, config
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent 
 
 SECRET_KEY = config('SECRET_KEY', default='clave-de-desarrollo-cambiar-en-produccion')
-DEBUG = config('DEBUG', default=False, cast=bool)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,testserver', cast=Csv())
+
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 INSTALLED_APPS = [
     'jazzmin',
@@ -31,6 +32,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'accounts.middleware.BloquearAdminParaSocios',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -40,7 +42,7 @@ ROOT_URLCONF = 'gimnasionatatorio.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -88,14 +90,14 @@ USE_TZ = True
 
 # Estáticos (landing) + whitenoise.
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'pagina' / 'static']
+STATICFILES_DIRS = [BASE_DIR / "pagina/static/"]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Autenticación.
 LOGIN_URL = 'accounts:login'
-LOGIN_REDIRECT_URL = 'socios:panel'
+LOGIN_REDIRECT_URL = 'accounts:post_login'
 LOGOUT_REDIRECT_URL = 'pagina:inicio'
 
 # Los mensajes de tipo ERROR usan la clase alert-danger de Bootstrap.
@@ -127,3 +129,7 @@ JAZZMIN_UI_TWEAKS = {
     "navbar": "navbar-dark",
     "no_navbar_border": True,
 }
+
+DEBUG = True
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
