@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'pagina',
     'accounts',
     'socios',
+    'actividades',
 ]
 
 MIDDLEWARE = [

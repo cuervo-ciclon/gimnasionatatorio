@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-5">
+  <h2>Gestión de actividades – {{ periodo }}</h2>
+
+  <div class="card my-4">
+    <div class="card-body">
+      <h5>Inscribir socio a una actividad</h5>
+      <form method="post" action="{% url 'actividades:inscribir' %}" class="row g-3">
+        {% csrf_token %}
+        <div class="col-md-4">
+          <label class="form-label">Socio</label>
+          <select name="socio" class="form-select" required>
+            {% for s in socios %}
+              <option value="{{ s.pk }}">{{ s.nombre_completo }} ({{ s.dni|default:'sin DNI' }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Actividad</label>
+          <select name="actividad" class="form-select" required>
+            {% for a in actividades %}{% if a.activa %}
+              <option value="{{ a.pk }}">{{ a.nombre }} (cupo {{ a.cupo_maximo }}/día)</option>
+            {% endif %}{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Plan</label>
+          <select name="plan" class="form-select" required>
+            {% for valor, etiqueta in planes %}
+              <option value="{{ valor }}">{{ etiqueta }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Días de la semana</label>
+          <div class="d-flex flex-wrap gap-3">
+            {% for d in dias %}
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="dias" value="{{ d.numero }}" id="dia{{ d.numero }}">
+                <label class="form-check-label" for="dia{{ d.numero }}">{{ d.nombre }}</label>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="col-12"><button class="btn btn-primary">Inscribir</button></div>
+      </form>
+    </div>
+  </div>
+
+  <form method="post" class="mb-3">{% csrf_token %}
+    <button name="renovar" value="1" class="btn btn-outline-primary">🔄 Renovar mes</button>
+  </form>
+
+  <h4>Inscripciones de {{ periodo }}</h4>
+  <table class="table align-middle">
+    <thead><tr><th>Socio</th><th>Actividad</th><th>Plan</th><th>Días</th><th>Reservas</th><th>Próximo mes</th></tr></thead>
+    <tbody>
+    {% for ins in inscripciones %}
+      <tr>
+        <td>{{ ins.socio.nombre_completo }}</td>
+        <td>{{ ins.actividad.nombre }}</td>
+        <td>{{ ins.get_plan_display }}</td>
+        <td>{% for d in ins.dias.all %}{{ d.nombre|slice:':3' }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+        <td>{{ ins.reservas.count }}</td>
+        <td>
+          {% if ins.renovada %}
+            <span class="badge bg-secondary">Ya renovado</span>
+          {% else %}
+            <span class="badge bg-warning text-dark">Pendiente</span>
+          {% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6">Sin inscripciones este mes.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

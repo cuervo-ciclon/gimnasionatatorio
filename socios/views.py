@@ -57,6 +57,8 @@ def panel_socio(request):
         'revision': socio.revisiones.filter(anio=anio, mes=mes).first(),
         'asistencias': socio.asistencias.all()[:30],
         'cuotas': socio.cuotas.all()[:12],
+        'anio_actual': anio,
+        'mes_actual': mes,
     }
     return render(request, 'socios/panel_socio.html', contexto)
 

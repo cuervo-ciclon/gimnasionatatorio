@@ -17,11 +17,11 @@
                 <div class="bg-white p-4 rounded shadow-sm text-center mb-20">
                     <h4>Cuota {{ periodo }}</h4>
                     {% if cuota and cuota.pagada %}
-                        <span class="badge bg-success">PAGADA</span>
-                        <p class="mt-2 mb-0 small">Pagada el {{ cuota.fecha_pago|date:"d/m/Y H:i" }}</p>
+                    <span class="badge bg-success">PAGADA</span>
+                    <p class="mt-2 mb-0 small">Pagada el {{ cuota.fecha_pago|date:"d/m/Y H:i" }}</p>
                     {% else %}
-                        <span class="badge bg-warning text-dark">PENDIENTE</span>
-                        <p class="mt-2 mb-0 small">Pasá por recepción para abonar en efectivo o transferencia.</p>
+                    <span class="badge bg-warning text-dark">PENDIENTE</span>
+                    <p class="mt-2 mb-0 small">Pasá por recepción para abonar en efectivo o transferencia.</p>
                     {% endif %}
                 </div>
             </div>
@@ -29,11 +29,11 @@
                 <div class="bg-white p-4 rounded shadow-sm text-center mb-20">
                     <h4>Revisión médica {{ periodo }}</h4>
                     {% if revision and revision.apto %}
-                        <span class="badge bg-success">APTO</span>
-                        <p class="mt-2 mb-0 small">Registrada el {{ revision.fecha_revision|date:"d/m/Y H:i" }}</p>
+                    <span class="badge bg-success">APTO</span>
+                    <p class="mt-2 mb-0 small">Registrada el {{ revision.fecha_revision|date:"d/m/Y H:i" }}</p>
                     {% else %}
-                        <span class="badge bg-warning text-dark">PENDIENTE</span>
-                        <p class="mt-2 mb-0 small">Presentá tu apto médico en recepción para entrenar este mes.</p>
+                    <span class="badge bg-warning text-dark">PENDIENTE</span>
+                    <p class="mt-2 mb-0 small">Presentá tu apto médico en recepción para entrenar este mes.</p>
                     {% endif %}
                 </div>
             </div>
@@ -57,7 +57,12 @@
                     {% if asistencias %}
                     <div class="table-responsive">
                         <table class="table table-sm">
-                            <thead><tr><th>Fecha</th><th>Hora</th></tr></thead>
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Hora</th>
+                                </tr>
+                            </thead>
                             <tbody>
                                 {% for asistencia in asistencias %}
                                 <tr>
@@ -74,6 +79,32 @@
                 </div>
             </div>
         </div>
+
+        <h4 class="mt-4">Mis actividades de {{ periodo }}</h4>
+
+        {% for ins in socio.inscripciones.all %}
+            {% if ins.anio == anio_actual and ins.mes == mes_actual %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <strong>{{ ins.actividad }}</strong> – {{ ins.get_plan_display }}<br>
+                    Días:
+                    {% for d in ins.dias.all %}
+                        {{ d.nombre }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                    <br>
+                    <small>
+                        Reservas:
+                        {% for r in ins.reservas.all %}
+                            {{ r.fecha|date:"d/m" }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </small>
+                </div>
+            </div>
+            {% endif %}
+        {% empty %}
+            <p>No tenés actividades inscriptas este mes.</p>
+        {% endfor %}
+
     </div>
 </section>
 {% endblock %}
