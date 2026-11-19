@@ -133,4 +133,4 @@ JAZZMIN_UI_TWEAKS = {
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver', '://pythonanywhere.com']

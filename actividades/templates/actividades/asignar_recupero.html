@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+  <h4>Asignar recupero — {{ recupero.inscripcion.socio }} en {{ actividad }}</h4>
+  <p class="text-muted">Falló la clase del {{ recupero.fecha_fallada|date:"d/m/Y" }}.</p>
+  <form method="post" class="row g-2 align-items-end">
+    {% csrf_token %}
+    <div class="col-auto">
+      <label class="form-label">Clase para recuperar</label>
+      <select name="fecha_recupero" class="form-select" required>
+        {% for f in fechas_posibles %}
+          <option value="{{ f|date:'Y-m-d' }}">{{ f|date:"d/m" }}</option>
+        {% empty %}
+          <option disabled>No hay fechas con lugar este mes</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-primary">Asignar</button>
+      <a href="{% url 'socios:dashboard' %}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

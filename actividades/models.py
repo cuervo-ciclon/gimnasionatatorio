@@ -19,26 +19,54 @@ class DiaSemana(models.Model):
     def __str__(self):
         return self.nombre
 
-
-class Actividad(models.Model):
-    """Actividad del gimnasio. Solo el staff la crea y edita."""
-
-    nombre = models.CharField('Nombre', max_length=100, unique=True)
-    descripcion = models.TextField('Descripción', blank=True)
-    cupo_maximo = models.PositiveSmallIntegerField(
-        'Máximo', default=15,
-        help_text='Cupo por cada día de la semana, por mes.',
-    )
-    activa = models.BooleanField('Activa', default=True)
+class Horario(models.Model):
+    """Franja horaria de una actividad, ej: 19:30 - 20:30."""
+    etiqueta = models.CharField(max_length=30, unique=True)  # ej: "19:30 - 20:30"
 
     class Meta:
-        verbose_name = 'Actividad'
-        verbose_name_plural = 'Actividades'
-        ordering = ['nombre']
+        ordering = ["etiqueta"]
 
     def __str__(self):
+        return self.etiqueta
+class Actividad(models.Model):
+    nombre = models.CharField(max_length=100)
+    horario = models.ForeignKey(
+        Horario, on_delete=models.PROTECT, null=True, blank=True,
+        related_name="actividades",
+    )
+    dias = models.ManyToManyField(DiaSemana, blank=True, related_name="actividades")
+    descripcion = models.TextField(blank=True)
+    cupo_maximo = models.PositiveIntegerField(default=20, verbose_name="Cupo")   # cupo por día/sesión
+    activa = models.BooleanField(default=True)
+    creada = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["nombre", "horario__etiqueta"]
+
+    def __str__(self):
+        if self.horario:
+            return f"{self.nombre} ({self.horario})"
         return self.nombre
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if not self.horario:
+            return
+        repetidos = Actividad.objects.filter(
+            nombre=self.nombre, horario=self.horario
+        ).exclude(pk=self.pk)
+        for otra in repetidos:
+            dias_otra = set(otra.dias.values_list("numero", flat=True))
+            dias_mios = set(d.numero for d in self.dias.all())
+            pisados = dias_otra & dias_mios
+            if pisados:
+                nombres = ", ".join(
+                    d.nombre for d in otra.dias.all() if d.numero in pisados
+                )
+                raise ValidationError(
+                    f"Ya existe '{self.nombre}' los {nombres} en el horario {self.horario}. "
+                    f"Elegí otros días u otro horario."
+                )
 
 class InscripcionMes(models.Model):
     """Plan mensual de un socio en una actividad (días de la semana elegidos)."""
@@ -75,10 +103,6 @@ class InscripcionMes(models.Model):
     def __str__(self):
         return f'{self.socio} → {self.actividad} ({self.mes}/{self.anio})'
 
-    def clean(self):
-        """La cantidad de días marcados debe coincidir con el plan."""
-        if self.pk and self.dias.count() != self.plan:
-            raise ValidationError('La cantidad de días elegidos debe coincidir con el plan.')
 
 
 class Reserva(models.Model):
@@ -105,3 +129,22 @@ class Reserva(models.Model):
 
     def __str__(self):
         return f'{self.inscripcion.actividad} – {self.fecha:%d/%m/%Y} – {self.inscripcion.socio}'
+
+class Recupero(models.Model):
+    class Estado(models.TextChoices):
+        PENDIENTE = "P", "Pendiente"
+        USADO = "U", "Usado"
+        VENCIDO = "V", "Vencido"
+        CANCELADO = "C", "Cancelado"
+
+    inscripcion = models.ForeignKey(InscripcionMes, on_delete=models.CASCADE, related_name="recuperos")
+    fecha_fallada = models.DateField()                 # la clase que no asistió
+    fecha_recupero = models.DateField(null=True, blank=True)  # la clase donde recupera
+    estado = models.CharField(max_length=1, choices=Estado.choices, default=Estado.PENDIENTE)
+    creado = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-creado"]
+
+    def __str__(self):
+        return f"Recupero de {self.inscripcion.socio} – faltó {self.fecha_fallada} ({self.get_estado_display()})"

@@ -1,14 +1,18 @@
 """Vistas del staff: gestión de actividades e inscripciones mensuales."""
+import calendar
+import datetime
+from datetime import date
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 from socios.models import Socio
 from socios.services import nombre_mes
 from socios.views import staff_required
 
-from .models import Actividad, DiaSemana, InscripcionMes
+from .models import Actividad, DiaSemana, InscripcionMes, Recupero, Reserva
 from .services import inscribir_socio, renovar_mes
 
 
@@ -77,3 +81,62 @@ def inscribir(request):
     else:
         messages.error(request, mensaje)
     return redirect('actividades:dashboard')
+
+def cupos_disponibles(actividad, fecha):
+    """Lugares libres en la actividad para una fecha (inscriptos fijos + recuperos)."""
+    if not actividad.dias.filter(numero=fecha.weekday()).exists():
+        return 0  # ese día la actividad no se dicta
+    usados = Reserva.objects.filter(inscripcion__actividad=actividad, fecha=fecha).count()
+    ocupados = Recupero.objects.filter(
+        inscripcion__actividad=actividad,
+        fecha_recupero=fecha,
+        estado=Recupero.Estado.USADO,
+    ).count()
+    return max(actividad.cupo_maximo - usados - ocupados, 0)
+
+
+def _fechas_con_lugar(actividad):
+    """Fechas del mes actual de esa actividad con lugar libre."""
+    hoy = timezone.localdate()
+    fin = date(hoy.year, hoy.month, calendar.monthrange(hoy.year, hoy.month)[1])
+    fechas = []
+    d = hoy
+    while d <= fin:
+        if actividad.dias.filter(numero=d.weekday()).exists() and cupos_disponibles(actividad, d) > 0:
+            fechas.append(d)
+        d += datetime.timedelta(days=1)
+    return fechas
+
+
+@staff_required
+def asignar_recupero(request, recupero_id):
+    """El admin elige la clase donde el socio recupera la que faltó."""
+    recupero = get_object_or_404(Recupero, id=recupero_id)
+    actividad = recupero.inscripcion.actividad
+
+    if request.method == "POST":
+        fecha_str = request.POST.get("fecha_recupero")
+        try:
+            fecha = datetime.date.fromisoformat(fecha_str)
+        except (TypeError, ValueError):
+            messages.error(request, "Fecha inválida.")
+            return redirect("actividades:dashboard")
+
+        if cupos_disponibles(actividad, fecha) <= 0:
+            messages.error(request, f"Sin lugares en {actividad} el {fecha:%d/%m}. Elegí otra fecha.")
+            return redirect("actividades:asignar_recupero", recupero_id)
+
+        recupero.fecha_recupero = fecha
+        recupero.estado = Recupero.Estado.USADO
+        recupero.save()
+        messages.success(
+            request,
+            f"Recupero asignado: {recupero.inscripcion.socio} → {actividad} el {fecha:%d/%m}.",
+        )
+        return redirect("actividades:dashboard")
+
+    return render(request, "actividades/asignar_recupero.html", {
+        "recupero": recupero,
+        "fechas_posibles": _fechas_con_lugar(actividad),
+        "actividad": actividad,
+    })
