@@ -191,7 +191,14 @@ class InscripcionMesAdmin(admin.ModelAdmin):
             fecha = date(obj.anio, obj.mes, dia)
             if fecha.weekday() in dias_actuales:
                 Reserva.objects.get_or_create(inscripcion=obj, fecha=fecha)
-
+    def save_related(self, request, form, formsets, change):
+        """Después de guardar los inlines, crea recupero por cada reserva marcada ausente."""
+        super().save_related(request, form, formsets, change)
+        for reserva in form.instance.reservas.all():
+            if reserva.estado == "ausente":
+                Recupero.objects.get_or_create(
+                    inscripcion=form.instance, fecha_fallada=reserva.fecha
+                )
 @admin.register(Recupero)
 class RecuperoAdmin(admin.ModelAdmin):
     list_display = ("socio", "actividad", "fecha_fallada", "fecha_recupero", "estado", "creado")
